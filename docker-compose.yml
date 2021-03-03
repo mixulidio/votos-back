@@ -1,0 +1,17 @@
+version: "3"
+services:
+    pg-votos:
+        container_name: pg-votos
+        image: postgres:9.6
+        ports:
+          - 5432:5432
+        environment:
+          - POSTGRES_DB=votos
+          - POSTGRES_PASSWORD=password
+        volumes:
+          - votos_postgresql:/var/lib/postgresql
+          - votos_postgresql_data:/var/lib/postgresql/data
+
+volumes:
+    votos_postgresql:
+    votos_postgresql_data:
