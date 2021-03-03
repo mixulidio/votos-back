@@ -7,6 +7,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.Valid;
+
+import com.cooperativismo.votosback.controller.form.VotoForm;
 
 @Entity
 public class Votos {
@@ -22,6 +25,14 @@ public class Votos {
 
 	@Enumerated(EnumType.STRING)
 	private OpcaoVotacao opcao;
+	
+	public Votos() {}
+	
+	public Votos(@Valid VotoForm votoForm, Pauta pauta) {
+		this.pauta = pauta;
+		this.associado = votoForm.getAssociado();
+		this.opcao = votoForm.getOpcao();
+	}
 
 	public Long getId() {
 		return id;

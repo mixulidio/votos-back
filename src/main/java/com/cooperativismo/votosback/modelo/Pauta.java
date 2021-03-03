@@ -1,5 +1,6 @@
 package com.cooperativismo.votosback.modelo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -9,7 +10,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Pauta {
+public class Pauta implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,12 +1,10 @@
 package com.cooperativismo.votosback.controller.form;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class AbreVotacaoForm {
 
 	@NotNull
-	@NotEmpty
 	private Long pauta;
 
 	private Integer tempo = 1;
