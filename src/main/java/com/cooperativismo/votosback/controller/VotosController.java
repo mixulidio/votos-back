@@ -9,10 +9,13 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooperativismo.votosback.controller.dto.ResultadoVotoDTO;
 import com.cooperativismo.votosback.controller.dto.VotoDTO;
 import com.cooperativismo.votosback.controller.form.VotoForm;
 import com.cooperativismo.votosback.exeption.ValidationException;
@@ -71,5 +74,15 @@ public class VotosController {
 		if (rightNow.isAfter(pautaRet.getFimVotacao())) {
 			throw new ValidationException("Votação já encerrada.");
 		}
+	}
+
+	@GetMapping(value = "resulltado/{pauta}")
+	public ResponseEntity<List<ResultadoVotoDTO>> contabilizarResultadoVotosPauta(@PathVariable Long pauta)	throws ValidationException {
+		if (pauta == null || pauta <= 0) {
+			throw new ValidationException("Informe a Pauta corretamente.");
+		}
+
+		List<ResultadoVotoDTO> resultado = votosRepository.contabilizarResultadoVotosPauta(pauta);
+		return new ResponseEntity<List<ResultadoVotoDTO>>(resultado, HttpStatus.OK);
 	}
 }
