@@ -1,6 +1,7 @@
 package com.cooperativismo.votosback.controller;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -25,9 +26,19 @@ public class PautaController {
 
 	@PostMapping(value = "/novapauta")
 	@Transactional
-	public ResponseEntity<Pauta> novaPauta(@RequestBody Pauta pauta) {
+	public ResponseEntity<Pauta> novaPauta(@RequestBody Pauta pauta) throws ValidationException {
+		validaNovaPauta(pauta);
 		Pauta savePauta = pautaRepository.save(pauta);
 		return new ResponseEntity<Pauta>(savePauta, HttpStatus.OK);
+	}
+
+	private void validaNovaPauta(Pauta pauta) throws ValidationException {
+		if(pauta.getTitulo() == null) {
+			throw new ValidationException("Título deve ser informado.");
+		}
+		if(pauta.getAssembleia() == null) {
+			throw new ValidationException("Assembléia deve ser informada.");
+		}
 	}
 
 	/**
@@ -35,28 +46,31 @@ public class PautaController {
 	 */
 	@PostMapping(value = "/abrevotacao")
 	@Transactional
-	public ResponseEntity<Pauta> abreVotacao(@RequestBody @Valid AbreVotacaoForm abreVotacaoForm)
-			throws ValidationException {
+	public ResponseEntity<Pauta> abreVotacao(@RequestBody @Valid AbreVotacaoForm abreVotacaoForm) throws ValidationException {
 
 		validaAbreVotaca(abreVotacaoForm);
 
-		Pauta pautaReturn = pautaRepository.getOne(abreVotacaoForm.getPauta());
+		Optional<Pauta> pautaReturn = pautaRepository.findById(abreVotacaoForm.getPauta());
+		if (!pautaReturn.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+
 		LocalDateTime rightNow = LocalDateTime.now();
 		LocalDateTime rightNowPlusMinutes = LocalDateTime.now().plusMinutes(abreVotacaoForm.getTempo());
-		pautaReturn.setInicioVotacao(rightNow);
-		pautaReturn.setFimVotacao(rightNowPlusMinutes);
+		pautaReturn.get().setInicioVotacao(rightNow);
+		pautaReturn.get().setFimVotacao(rightNowPlusMinutes);
 
-		Pauta savePauta = pautaRepository.save(pautaReturn);
-		return new ResponseEntity<Pauta>(savePauta, HttpStatus.OK);
+		Pauta savePauta = pautaRepository.save(pautaReturn.get());
+		return ResponseEntity.ok(savePauta);
 	}
 
 	private void validaAbreVotaca(AbreVotacaoForm abreVotacaoForm) throws ValidationException {
 		if (abreVotacaoForm.getPauta() == null) {
-			throw new ValidationException("Pauta deve ser informada");
+			throw new ValidationException("Pauta deve ser informada.");
 		}
 
 		if (abreVotacaoForm.getTempo() != null && abreVotacaoForm.getTempo() <= 0) {
-			throw new ValidationException("Tempo deve ser maior que Zero");
+			throw new ValidationException("Tempo deve ser maior que Zero.");
 		}
 	}
 

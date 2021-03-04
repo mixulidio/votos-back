@@ -2,6 +2,7 @@ package com.cooperativismo.votosback.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -33,17 +34,19 @@ public class VotosController {
 	@Autowired
 	private PautaRepository pautaRepository;
 
+	public LocalDateTime rightNow() {
+		return LocalDateTime.now();
+	}
+
 	@PostMapping(value = "voto")
 	@Transactional
 	public ResponseEntity<VotoDTO> votar(@RequestBody @Valid VotoForm votoForm) throws ValidationException {
-		LocalDateTime rightNow = LocalDateTime.now();
-		Pauta pautaRet = pautaRepository.getOne(votoForm.getPauta());
-
-		validaVotacaoAberta(rightNow, pautaRet);
+		Optional<Pauta> optPauta = pautaRepository.findById(votoForm.getPauta());
+		validaVotacaoAberta(rightNow(), optPauta);
 
 		validaJaVotado(votoForm);
 
-		Votos voto = new Votos(votoForm, pautaRet);
+		Votos voto = new Votos(votoForm, optPauta.get());
 		Votos votoRet = votosRepository.save(voto);
 
 		VotoDTO votoDTO = new VotoDTO(votoRet);
@@ -58,7 +61,12 @@ public class VotosController {
 		}
 	}
 
-	private void validaVotacaoAberta(LocalDateTime rightNow, Pauta pautaRet) throws ValidationException {
+	private void validaVotacaoAberta(LocalDateTime rightNow, Optional<Pauta> optPauta) throws ValidationException {
+		if (!optPauta.isPresent()) {
+			throw new ValidationException("Pauta não encontrada.");
+		}
+		
+		Pauta pautaRet = optPauta.get();
 		if (pautaRet == null) {
 			throw new ValidationException("Pauta não encontrada.");
 		}
